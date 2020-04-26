@@ -395,7 +395,9 @@ parser.add_argument('-i', '-input', dest='input_size', action='store', type=int,
                     help="Input image size (KB) - Default 150")
 
 parser.add_argument('-d', '--device', dest='device', action='store', type=str, required=False, help="Device criteria")
+parser.add_argument('-du', '--deviceupload', dest='device_upload', action='store', type=str, required=False, help="Device upload limit")
 parser.add_argument('-e', '--edge', dest='edge', action='store', type=str, required=False, help="Edge criteria")
+parser.add_argument('-eu', '--edgeupload', dest='edge_upload', action='store', type=str, required=False, help="Edge upload limit")
 parser.add_argument('-c', '--cloud', dest='cloud', action='store', type=str, required=False, help="Cloud criteria")
 
 args = parser.parse_args()
@@ -471,6 +473,16 @@ if args.input_size is not None:
     input_size = megabytes_to_bytes(args.input_size)
 else:
     input_size = megabytes_to_bytes(0.15)
+    
+if args.device_upload is not None:
+    device_upload = megabytes_to_bytes(float(args.device_upload))
+else:
+    device_upload = None 
+
+if args.edge_upload is not None:
+    edge_upload = megabytes_to_bytes(float(args.edge_upload))
+else:
+    edge_upload = None
 
 if args.model is not None:
     application = args.model.lower()
@@ -540,6 +552,9 @@ if criteria_device_layers_inc:
 if criteria_device_layers_excl:
     scenarios = [s for s in scenarios if
                  all(x not in range(s.device_block[0], s.device_block[1] + 1) for x in criteria_device_layers_excl)]
+if device_upload is not None:
+    scenarios = [s for s in scenarios if s.device_output_size <= device_upload]
+                
 
 # Edge filtering
 if criteria_edges_inc:
@@ -552,6 +567,8 @@ if criteria_edge_layers_inc:
 if criteria_edge_layers_excl:
     scenarios = [s for s in scenarios if
                  all(x not in range(s.edge_block[0], s.edge_block[1] + 1) for x in criteria_edge_layers_excl)]
+if edge_upload is not None:
+    scenarios = [s for s in scenarios if s.edge_output_size <= edge_upload]
 
 # Cloud filtering
 if criteria_clouds_inc:
