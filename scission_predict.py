@@ -373,7 +373,7 @@ def create_graph(s: Scenario, filename):
 
     plt.legend(handles=handles)
 
-    file_to_open = Path("results/Best Graphs/") / (f"{filename}.png")
+    file_to_open = Path(dname) / (f"{filename}.png")
     plt.savefig(file_to_open, bbox_inches='tight')
 
     plt.show()
