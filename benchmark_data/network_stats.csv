@@ -1,9 +1,4 @@
 source,destination,ping(ms),bandwidth(mbps)
-raspi4,2500,            66.7,  1.6
 raspi4,vm2Core,            66.7,  1.6
 raspi4,6700k(GPU),      100,  1.6
-raspi4,6700k(NoGPU),    100,  1.6
-2500,6700k(GPU),        20,  50
-2500,6700k(NoGPU),      20,  50
 vm2Core,6700k(GPU),        20,  50
-vm2Core,6700k(NoGPU),      20,  50
