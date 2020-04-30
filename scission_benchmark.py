@@ -414,7 +414,7 @@ parser.add_argument('-n', '--name', dest='name', action='store', type=str, requi
                     help="Platform Name (e.g. highPerformanceEdge)")
 parser.add_argument('-r', '-repeats', dest='repeats', action='store', type=int, required=False,
                     help="Number of repeats for averaging - DEFAULT 10")
-parser.add_argument('-c', '--cuda', dest='cuda', action='store', type=str, required=False,
+parser.add_argument('-dc', '--disablecuda', dest='cuda', action='store', type=str, required=False,
                     help="Disable cuda - DEFAULT FALSE")
 parser.add_argument('-i', '--input', dest='input', action='store', type=str, required=True, help="Input image name")
 
