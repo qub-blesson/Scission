@@ -495,7 +495,7 @@ for application in model_dict:
     total_application = time.time() - start_application
     print(f"[+] Benchmarking {application} took: {total_application} \n")
 
-    create_individual_graphs(selected_model, application)
+    # create_individual_graphs(selected_model, application)
 
     selected_model = None
     layer_outputs = {}

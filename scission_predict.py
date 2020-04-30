@@ -369,14 +369,10 @@ def create_graph(s: Scenario, filename):
     for axis in [ax1.yaxis]:
         axis.set_major_formatter(ScalarFormatter())
 
-    ax1.set_ylim(ymin=0)
-
     plt.legend(handles=handles)
 
     file_to_open = Path(dname) / (f"{filename}.png")
     plt.savefig(file_to_open, bbox_inches='tight')
-
-    plt.show()
 
 
 # Parse Args
@@ -588,7 +584,7 @@ if results[0] is None:
     print("No results for the specified configuration")
     exit()
 
-create_graph(sorted_scenarios[0], f"{application}-CommandLine")
+create_graph(sorted_scenarios[0], f"{application}-{round(results[0][0],2)}s")
 
 for idx, result in enumerate(results):
     if result is not None:
