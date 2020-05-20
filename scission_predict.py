@@ -102,7 +102,7 @@ def create_splits(length):
             if y > x or y == -1:
 
                 z = -1
-                if x is not length - 1 and y is not length - 1:
+                if x != length - 1 and y != length - 1:
                     z = length - 1
 
                 x_layers = ("-1", "-1")
@@ -126,16 +126,16 @@ def create_splits(length):
 
 # Calculates the time for a distribution to execute along with the output of that block
 def get_time(result: List[LayerBenchmark], start_index, end_index):
-    total = 0
+    total_time = 0
     layers = []
 
     for x in range(start_index, end_index + 1):
-        total += result[x].second_prediction
+        total_time += result[x].second_prediction
         layers.append((result[x].input_layer, result[x].output_layer, result[x].second_prediction))
 
     output_size = result[end_index].output_size
 
-    return total, output_size, layers
+    return total_time, output_size, layers
 
 
 # Creates all possible scenarios across all loaded devices
@@ -187,9 +187,9 @@ def create_scenarios(application: str, device_devices, edge_devices, cloud_devic
                         scenario.cloud_layers = cloud_layers
                         scenario.cloud_block = (cloud_layers[0][0], cloud_layers[-1][1])
 
-                    if edge_time is 0 and cloud_time is 0:
+                    if edge_time == 0 and cloud_time == 0:
                         scenario.device_output_size = 0
-                    elif cloud_time is 0:
+                    elif cloud_time == 0:
                         scenario.edge_output_size = 0
 
                     total_time = device_time + edge_time + cloud_time
@@ -197,9 +197,9 @@ def create_scenarios(application: str, device_devices, edge_devices, cloud_devic
 
                     scenario.config = "Device(" + str(scenario.device) + ") = " + str(
                         scenario.device_block[0]) + " - " + str(
-                        scenario.device_block[1]) + " Edge(" + str(scenario.edge) + ") = " + str(
+                        scenario.device_block[1]) + ", Edge(" + str(scenario.edge) + ") = " + str(
                         scenario.edge_block[0]) + " - " + str(
-                        scenario.edge_block[1]) + " Cloud(" + str(scenario.cloud) + ") = " + str(
+                        scenario.edge_block[1]) + ", Cloud(" + str(scenario.cloud) + ") = " + str(
                         scenario.cloud_block[0]) + " - " + str(
                         scenario.cloud_block[1])
 
@@ -223,45 +223,39 @@ def get_predictions_list_execution(scenarios: [Scenario]):
 
         for idx, result in enumerate(outputs[:list_count]):
             if result is None or result[0] > total_time:
-                data = (total_time,
-                        f"{round(total_time, 4)}s - {s.config} - {round(bytes_to_megabytes(s.device_output_size + s.edge_output_size), 4)}MB")
-                outputs.insert(idx, data)
+                stats = (total_time,
+                        f"{format(round(total_time, 4),'.4f')}s - {format(round(bytes_to_megabytes(s.device_output_size + s.edge_output_size), 4), '0.4f')}MB - {s.config}")
+                outputs.insert(idx, stats)
                 scenarios_sorted.insert(idx, s)
                 break
 
     return outputs[:list_count], scenarios_sorted[:list_count]
 
 
-# Calcualtes the transfer latency for a scenario
+# Calculates the transfer overhead for a scenario
 def get_transfer_overhead(s: Scenario):
     transfer_overhead = 0
-
     filesize_to_send = s.device_output_size
+    stats: NetworkStats
 
     if s.edge is not None:
-        stats: NetworkStats
         stats = device_stats[(s.device, s.edge)]
-
         transfer_overhead += (stats.ping + (filesize_to_send / stats.bandwidth))
-    elif s.cloud is not None:
-        stats: NetworkStats
-        stats = device_stats[(s.device, s.cloud)]
 
+        if s.cloud is not None:
+            stats = device_stats[(s.edge, s.cloud)]
+            transfer_overhead += (stats.ping + (s.edge_output_size / stats.bandwidth))
+
+    elif s.cloud is not None:
+        stats = device_stats[(s.device, s.cloud)]
         transfer_overhead += (stats.ping + (filesize_to_send / stats.bandwidth))
     elif s.edge is None and s.cloud is None:
         return transfer_overhead
 
-    if s.edge is not None:
-        if s.cloud is not None:
-            stats: NetworkStats
-            stats = device_stats[(s.edge, s.cloud)]
-
-            transfer_overhead += (stats.ping + (s.edge_output_size / stats.bandwidth))
-
     return transfer_overhead
 
 
-# Calculates the transfer latency between two devices given file size
+# Calculates the transfer overhead between two devices given a file size
 def get_specific_transfer_overhead(source, destination, size):
     stats: NetworkStats
     stats = device_stats[(source, destination)]
@@ -304,9 +298,6 @@ def create_graph(s: Scenario, filename):
 
     plt.rcParams.update({'font.size': 35})
 
-    file_path = "results/Best Graphs/"
-    Path(file_path).mkdir(parents=True, exist_ok=True)
-
     bars = []
     execution_times = []
     colors = []
@@ -326,12 +317,11 @@ def create_graph(s: Scenario, filename):
         bars.append("COMM.")
         colors.append("yellow")
 
-        execution_times.append([(time[2] if time[2] > 0 else 0.0006) * 1000 for time in s.edge_layers])
-        bars.append(
-            [f"{result[0]}-{result[1]}" if result[0] != result[1] else f"{result[0]}" for result in s.edge_layers])
+        execution_times.append([time[2] * 1000 for time in s.edge_layers])
+        bars.append([f"{result[0]}-{result[1]}" if result[0] != result[1] else f"{result[0]}" for result in s.edge_layers])
         colors.append(["g" for _ in s.edge_layers])
 
-        if s.edge_output_size is not 0:
+        if s.edge_output_size != 0:
             execution_times.append(get_specific_transfer_overhead(s.edge, s.cloud, s.edge_output_size) * 1000)
             bars.append("COMM.")
             colors.append("yellow")
@@ -344,7 +334,7 @@ def create_graph(s: Scenario, filename):
             bars.append("COMM.")
             colors.append("yellow")
 
-        execution_times.append([(time[2] if time[2] > 0 else 0.0006) * 1000 for time in s.cloud_layers])
+        execution_times.append([time[2] * 1000 for time in s.cloud_layers])
         bars.append(
             [f"{result[0]}-{result[1]}" if result[0] != result[1] else f"{result[0]}" for result in s.cloud_layers])
         colors.append(["b" for _ in s.cloud_layers])
@@ -356,7 +346,6 @@ def create_graph(s: Scenario, filename):
     colors = np.hstack(colors)
 
     ind = np.arange(len(bars))
-
     fig, ax1 = plt.subplots(figsize=(20, 10))
     ax1.set_ylabel("Execution time (ms)", labelpad=10)
     ax1.bar(ind, execution_times, width, align='center', color=colors)
@@ -370,8 +359,7 @@ def create_graph(s: Scenario, filename):
         axis.set_major_formatter(ScalarFormatter())
 
     plt.legend(handles=handles)
-
-    file_to_open = Path(dname) / (f"{filename}.png")
+    file_to_open = Path(dname) / f"{filename}.png"
     plt.savefig(file_to_open, bbox_inches='tight')
 
 
@@ -380,29 +368,27 @@ def create_graph(s: Scenario, filename):
 parser = argparse.ArgumentParser(description="Scission Prediction")
 
 parser.add_argument('-f', '--folder', dest='benchmark_folder', action='store', type=str, required=True,
-                    help="Results Folder")
+                    help="Name of folder containing benchmark data and network statistics file.")
 parser.add_argument('-s', '--statistics', dest='statistics_file', action='store', type=str, required=True,
-                    help="Network Statistics File Name")
-
-parser.add_argument('-m', '--model', dest='model', action='store', type=str, required=True, help="Model to predict for")
-parser.add_argument('-rc', '-rcount', dest='count', action='store', type=int, required=False,
-                    help="Number of results to return - Default 5")
-parser.add_argument('-i', '-input', dest='input_size', action='store', type=int, required=False,
-                    help="Input image size (KB) - Default 150")
-
-parser.add_argument('-d', '--device', dest='device', action='store', type=str, required=False, help="Device criteria")
-parser.add_argument('-du', '--deviceupload', dest='device_upload', action='store', type=str, required=False, help="Device upload limit")
-parser.add_argument('-e', '--edge', dest='edge', action='store', type=str, required=False, help="Edge criteria")
-parser.add_argument('-eu', '--edgeupload', dest='edge_upload', action='store', type=str, required=False, help="Edge upload limit")
-parser.add_argument('-c', '--cloud', dest='cloud', action='store', type=str, required=False, help="Cloud criteria")
+                    help="Name of network statistics file.")
+parser.add_argument('-m', '--model', dest='model', action='store', type=str, required=True, help="Name of the DNN model to predict for.")
+parser.add_argument('-rc', '-rcount', dest='result_count', action='store', type=int, required=False,
+                    help="Number of results to return")
+parser.add_argument('-i', '-input', dest='input_size', action='store', type=float, required=False,
+                    help="Input image filesize (MB)")
+parser.add_argument('-d', '--device', dest='device_criteria', action='store', type=str, required=False, help="Device criteria")
+parser.add_argument('-du', '--deviceupload', dest='device_upload', action='store', type=float, required=False, help="Device upload limit (MB)")
+parser.add_argument('-e', '--edge', dest='edge_criteria', action='store', type=str, required=False, help="Edge criteria")
+parser.add_argument('-eu', '--edgeupload', dest='edge_upload', action='store', type=float, required=False, help="Edge upload limit (MB)")
+parser.add_argument('-c', '--cloud', dest='cloud_criteria', action='store', type=str, required=False, help="Cloud criteria")
 
 args = parser.parse_args()
 
 benchmark_folder = args.benchmark_folder
 network_statistics_file = args.statistics_file
 
-if args.count is not None:
-    list_count = args.count
+if args.result_count is not None:
+    list_count = args.result_count
 else:
     list_count = 5
 
@@ -412,8 +398,8 @@ criteria_devices_excl = []
 criteria_device_layers_inc = []
 criteria_device_layers_excl = []
 
-if args.device is not None:
-    for c in args.device.split(","):
+if args.device_criteria is not None:
+    for c in args.device_criteria.split(","):
         c = c.strip()
 
         if c.isdigit() or c == "-1":
@@ -431,8 +417,8 @@ criteria_edges_excl = []
 criteria_edge_layers_inc = []
 criteria_edge_layers_excl = []
 
-if args.edge is not None:
-    for c in args.edge.split(","):
+if args.edge_criteria is not None:
+    for c in args.edge_criteria.split(","):
         c = c.strip()
 
         if c.isdigit() or c == "-1":
@@ -450,8 +436,8 @@ criteria_clouds_excl = []
 criteria_cloud_layers_inc = []
 criteria_cloud_layers_excl = []
 
-if args.cloud is not None:
-    for c in args.cloud.split(","):
+if args.cloud_criteria is not None:
+    for c in args.cloud_criteria.split(","):
         c = c.strip()
 
         if c.isdigit() or c == "-1":
@@ -492,7 +478,6 @@ os.chdir(dname)
 os.chdir(benchmark_folder)
 devices = []
 
-print("[+] Loading Data")
 for filename in os.listdir(os.getcwd()):
     if not fnmatch.fnmatch(filename, "*-*.dat"):
         continue
@@ -510,7 +495,7 @@ for filename in os.listdir(os.getcwd()):
 
     devices.append(new_device)
 
-if len(devices) is 0:
+if len(devices) == 0:
     print("[+] No .dat benchmark files stored in benchmark_data. Exiting...")
     exit()
 
@@ -525,18 +510,15 @@ device = [d for d in devices if d.type == DeviceType.DEVICE]
 edge = [d for d in devices if d.type == DeviceType.EDGE]
 cloud = [d for d in devices if d.type == DeviceType.CLOUD]
 
-print("[+]" + str(len(devices)) + " devices loaded.")
-print("[+]" + str(len(device)) + " device.")
-print("[+]" + str(len(edge)) + " edge.")
-print("[+]" + str(len(cloud)) + " cloud.")
+print(f"[+] {len(devices)} systems loaded : {len(device)} device, {len(edge)} edge, {len(cloud)} cloud")
 
 scenarios_raw = create_scenarios(application, device, edge, cloud)
-s: Scenario
 scenarios = set(scenarios_raw)
 
 if list_count > len(scenarios):
     list_count = len(scenarios)
 
+s: Scenario
 # Device filtering
 if criteria_devices_inc:
     scenarios = [s for s in scenarios if s.device in criteria_devices_inc and s.device_layers is not None]
@@ -584,8 +566,10 @@ if results[0] is None:
     print("No results for the specified configuration")
     exit()
 
-create_graph(sorted_scenarios[0], f"{application}-{round(results[0][0],2)}s")
-
+print(f"[+] {application} results")
 for idx, result in enumerate(results):
     if result is not None:
         print(f"[{idx + 1}] {result[1]}")
+
+create_graph(sorted_scenarios[0], f"{application}-{round(results[0][0],2)}s")
+print(f"[+] Graph created: {application}-{round(results[0][0],2)}s")
