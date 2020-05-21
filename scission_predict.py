@@ -387,15 +387,15 @@ parser.add_argument('-d', '--device', dest='device_criteria', action='store', ty
 parser.add_argument('--device-upload', dest='device_upload', action='store', type=float,
                     help="Device upload limit (MB)")
 parser.add_argument('--device-time', dest='device_time', action='store', type=str,
-                    help="Device time limit (s) or as a percentage 'x%%'")
+                    help="Device time limit (s) or as a percentage of total processing time'x%%'")
 parser.add_argument('-e', '--edge', dest='edge_criteria', action='store', type=str, help="Edge criteria")
 parser.add_argument('--edge-upload', dest='edge_upload', action='store', type=float,
                     help="Edge upload limit (MB)")
 parser.add_argument('--edge-time', dest='edge_time', action='store', type=str,
-                    help="Edge time limit (s) or as a percentage 'x%%'")
+                    help="Edge time limit (s) or as a percentage of total processing time'x%%'")
 parser.add_argument('-c', '--cloud', dest='cloud_criteria', action='store', type=str, help="Cloud criteria")
 parser.add_argument('--cloud-time', dest='cloud_time', action='store', type=str,
-                    help="Cloud time limit (s) or as a percentage 'x%%'")
+                    help="Cloud time limit (s) or as a percentage of total processing time'x%%'")
 
 args = parser.parse_args()
 
