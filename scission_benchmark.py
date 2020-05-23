@@ -409,25 +409,27 @@ model_dict = {
 
 parser = argparse.ArgumentParser(description="Scission benchmarking for Keras Models")
 
-parser.add_argument('-p', '--platform', dest='platform', action='store', type=str, required=True, help="Platform Type")
-parser.add_argument('-n', '--name', dest='name', action='store', type=str, required=True,
-                    help="Platform Name (e.g. highPerformanceEdge)")
+parser.add_argument('platform', action='store', type=str, help="Platform Type (e.g. cloud/edge/device)")
+parser.add_argument('name', action='store', type=str, help="Platform Name (e.g. highPerformanceEdge)")
+parser.add_argument('input', action='store', type=str, help="Input image filename (e.g. cat.jpeg)")
 parser.add_argument('-r', '-repeats', dest='repeats', action='store', type=int, required=False,
-                    help="Number of repeats for averaging - DEFAULT 10")
+                    help="Number of repeats for averaging (default: 10)")
 parser.add_argument('-dc', '--disablecuda', dest='cuda', action='store', type=str, required=False,
-                    help="Disable cuda - DEFAULT FALSE")
-parser.add_argument('-i', '--input', dest='input', action='store', type=str, required=True, help="Input image name")
+                    help="Disable cuda (default: False)")
 
 args = parser.parse_args()
 
-number_of_repeats = 10
-disable_cuda = False
 
 if args.repeats is not None:
     number_of_repeats = args.repeats
+else:
+    number_of_repeats = 10
+    
 
 if args.cuda is not None:
     disable_cuda = str2bool(args.cuda)
+else:    
+    disable_cuda = False
 
 device_type = args.platform
 device_name = args.name
