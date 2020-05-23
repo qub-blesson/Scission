@@ -10,9 +10,12 @@ Scission is a tool for automated benchmarking of distributed DNNs on a given set
 Scission is underpinned by a six-step benchmarking approach (as shown below) that collects benchmark data by executing the DNNs on all target resources and subsequently identifies whether a native or distributed execution approach is most suited for the DNN. 
 ![](readme-assets/scission-methodology.png)
 
-
 For distributed execution, it identifies the optimal resource pipeline and partitions measured by the lowest end-to-end latency (compute time on resources and the communication time between resources) of the DNN by: (i) pairing the most computationally intensive layers with capable resources to minimize compute latencies, and at the same time (ii) selecting layers with the least amount of output data as potential end layers of a partition to minimise communication latencies. Thus the decision-making approach in Scission is context-aware by capitalising on the hardware capabilities of the target resources, their locality, the characteristics of DNN layers, and network condition. Scission relies on empirical data and does not estimate performance by making assumptions of the target hardware.
 
+### Citing the research
+Information for citing this research will be available shortly. 
+
+## About the software
 
 ### Viewing Help
 ```python3 ./scission_benchmark.py --help```  
