@@ -46,12 +46,28 @@ Criteria | Explanation
 -------- | ---------- 
 -d “3,!10,device1” | Layer 3 must be executed on device, layer 10 must not. The device with name "device1" must be used.
 -e “-1” | The edge must not be used.
--c “30,!cloud1)” | Layer 30 must be executed on the cloud, the device with name “cloud1” must not be used.
+-c “30,!cloud1” | Layer 30 must be executed on the cloud, the device with name “cloud1” must not be used.
 
 #### Prediction
 
 ```python3 ./scission_predict.py benchmark_data network_stats.csv vgg19 -d "!-1" -e 10 -c 16```
 
-The specified benchmark_data folder must contain data files produced by "scission_benchmark" and a network statistics file which contains network connection information for each of the systems benchmarked. An example folder containing benchmark files and network statistic files can be found in benchmark_data.
+The specified benchmark_data folder must contain data files produced by "scission_benchmark" and a network statistics file which contains network connection information for each of the systems benchmarked. An example folder containing benchmark files and network statistic files has been provided ("benchmark_data").
 
 The fastest configurations that fit the specified criteria will be printed, additionally a graph of the fastest configuration showing per layer latencies and network overheads will be saved to the working directory.
+
+The configurations are printed in the format: 
+```
+End-to-End latency - Total bandwidth used across the edge pipeline - Layer distribution
+```
+
+The output from the above prediction is displayed below:
+
+```
+[1] 9.0106s - 2.4087MB - Device(raspi4) = 0 - 6, Edge(vm2Core) = 7 - 11, Cloud(6700k(GPU)) = 12 - 25
+[2] 9.0594s - 2.4087MB - Device(raspi4) = 0 - 6, Edge(2500) = 7 - 11, Cloud(6700k(GPU)) = 12 - 25
+[3] 9.0721s - 2.4087MB - Device(raspi4) = 0 - 6, Edge(vm2Core) = 7 - 11, Cloud(6700k(NoGPU)) = 12 - 25
+[4] 9.1209s - 2.4087MB - Device(raspi4) = 0 - 6, Edge(2500) = 7 - 11, Cloud(6700k(NoGPU)) = 12 - 25
+[5] 9.1511s - 3.2115MB - Device(raspi4) = 0 - 6, Edge(vm2Core) = 7 - 12, Cloud(6700k(GPU)) = 13 - 25
+```
+
