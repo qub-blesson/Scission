@@ -1,5 +1,18 @@
-# Scission
-## A Tool for Maximising Performance of Deep Neural Networks in Edge Computing 
+# Scission: A Tool for Maximising Performance of Deep Neural Networks in Edge Computing 
+
+## About the research
+Scission is a tool for automated benchmarking of distributed DNNs on a given set of target device, edge and cloud resources for identifying the execution approach and determining the optimal partition for maximising the performance of DNN inference. In doing so, it addresses the following questions:
+
+1. Which combination of potential target hardware resources maximises performance?
+2. Which sequence of layers should be distributed across the target resource(s) for maximising DNN performance?
+3. How can the performance of DNNs be optimised given user-defined objectives or constraints?
+
+Scission is underpinned by a six-step benchmarking approach (as shown below) that collects benchmark data by executing the DNNs on all target resources and subsequently identifies whether a native or distributed execution approach is most suited for the DNN. 
+![](readme-assets/scission-methodology.png)
+
+
+For distributed execution, it identifies the optimal resource pipeline and partitions measured by the lowest end-to-end latency (compute time on resources and the communication time between resources) of the DNN by: (i) pairing the most computationally intensive layers with capable resources to minimize compute latencies, and at the same time (ii) selecting layers with the least amount of output data as potential end layers of a partition to minimise communication latencies. Thus the decision-making approach in Scission is context-aware by capitalising on the hardware capabilities of the target resources, their locality, the characteristics of DNN layers, and network condition. Scission relies on empirical data and does not estimate performance by making assumptions of the target hardware.
+
 
 ### Viewing Help
 ```python3 ./scission_benchmark.py --help```  
