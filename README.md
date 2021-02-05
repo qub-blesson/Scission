@@ -13,7 +13,7 @@ Scission is underpinned by a six-step benchmarking approach (as shown below) tha
 For distributed execution, it identifies the optimal resource pipeline and partitions measured by the lowest end-to-end latency (compute time on resources and the communication time between resources) of the DNN by: (i) pairing the most computationally intensive layers with capable resources to minimize compute latencies, and at the same time (ii) selecting layers with the least amount of output data as potential end layers of a partition to minimise communication latencies. Thus the decision-making approach in Scission is context-aware by capitalising on the hardware capabilities of the target resources, their locality, the characteristics of DNN layers, and network condition. Scission relies on empirical data and does not estimate performance by making assumptions of the target hardware.
 
 ### Citing the research
-Information for citing this research will be available shortly. 
+L. Lockhart, P. Harvey, P. Imai, P. Willis, and Blesson Varghese, "[Scission: Performance-driven and Context-aware Cloud-Edge Distribution of Deep Neural Networks](https://arxiv.org/pdf/2008.03523.pdf)," Proceedings of the 13th IEEE/ACM International Conference on Utility and Cloud Computing (UCC), 2020, pp. 257-268. . 
 
 ## About the software
 
